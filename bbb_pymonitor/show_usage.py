@@ -48,6 +48,7 @@ def get_meetings_table(meetings):
     table.add_column("Video", justify="right")
     table.add_column("Voice", justify="right")
     table.add_column("Created")
+    totals = [0] * 4
     for meeting in meetings:
         table.add_row(
             meeting["meetingName"],
@@ -57,7 +58,21 @@ def get_meetings_table(meetings):
             str(meeting["voiceParticipantCount"]),
             str(meeting["createDate"]),
         )
-
+        totals = tuple(
+            map(
+                sum,
+                zip(
+                    totals,
+                    [
+                        meeting["moderatorCount"],
+                        meeting["participantCount"],
+                        meeting["videoCount"],
+                        meeting["voiceParticipantCount"],
+                    ],
+                ),
+            )
+        )
+    table.add_row("Total", *map(str, totals))
     return table
 
 
