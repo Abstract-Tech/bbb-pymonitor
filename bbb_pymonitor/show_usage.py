@@ -4,7 +4,7 @@ from rich.table import Table
 
 import os
 import requests
-import xml.etree.ElementTree as ET
+import xmltodict
 
 
 BBB_SECRET = os.environ.get("BBB_SECRET")
@@ -17,12 +17,13 @@ builder = UrlBuilder(BBB_URL, BBB_SECRET)
 
 
 def get_meetings():
-    response = requests.get(builder.build_url("getMeetings"))
-    root = ET.fromstring(response.text)
+    response = xmltodict.parse(requests.get(builder.build_url("getMeetings")).text)
 
     meetings = []
-    for meeting_element in root.iter("meeting"):
-        meeting = etree_to_dict(meeting_element)
+    response_meetings = response["response"]["meetings"]
+    if response_meetings is None:
+        return meetings
+    for meeting in response_meetings.values():
         int_keys = [
             "listenerCount",
             "maxUsers",
@@ -39,7 +40,7 @@ def get_meetings():
     return meetings
 
 
-def get_table(meetings):
+def get_meetings_table(meetings):
     table = Table(show_header=True, header_style="bold green")
     table.add_column("Title", style="dim")
     table.add_column("Moderators", justify="right")
@@ -60,10 +61,6 @@ def get_table(meetings):
     return table
 
 
-def etree_to_dict(root):
-    return {el.tag: root.find(el.tag).text for el in root}
-
-
 def main():
     console = Console()
-    console.print(get_table(get_meetings()))
+    console.print(get_meetings_table(get_meetings()))

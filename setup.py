@@ -9,7 +9,7 @@ setup(
     author="Silvio Tomatis",
     author_email="silviot@gmail.com",
     license="GPL",
-    install_requires=["requests", "rich"],
+    install_requires=["requests", "rich", "xmltodict"],
     entry_points={"console_scripts": ["bbb_show_usage=bbb_pymonitor.show_usage:main"]},
     packages=["bbb_pymonitor"],
 )
