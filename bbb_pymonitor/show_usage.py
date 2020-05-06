@@ -1,6 +1,7 @@
 from .urlbuilder import UrlBuilder
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 import os
 import requests
@@ -17,27 +18,18 @@ builder = UrlBuilder(BBB_URL, BBB_SECRET)
 
 
 def get_meetings():
-    response = xmltodict.parse(requests.get(builder.build_url("getMeetings")).text)
+    url = builder.build_url("getMeetings")
+    text = requests.get(url).text
+    response = xmltodict.parse(text)
 
-    meetings = []
     response_meetings = response["response"]["meetings"]
     if response_meetings is None:
-        return meetings
-    for meeting in response_meetings.values():
-        int_keys = [
-            "listenerCount",
-            "maxUsers",
-            "moderatorCount",
-            "participantCount",
-            "videoCount",
-            "voiceParticipantCount",
-        ]
-        for key in meeting:
-            if key in int_keys:
-                meeting[key] = int(meeting[key])
-        meetings.append(meeting)
-
-    return meetings
+        return []
+    response_meetings.values()
+    if "meeting" in response_meetings:
+        if "meetingName" in response_meetings["meeting"]:
+            return [response_meetings["meeting"]]
+        return response_meetings["meeting"]
 
 
 def get_meetings_table(meetings):
@@ -47,32 +39,40 @@ def get_meetings_table(meetings):
     table.add_column("Participants", justify="right")
     table.add_column("Video", justify="right")
     table.add_column("Voice", justify="right")
+    table.add_column("Recording", justify="right")
     table.add_column("Created")
-    totals = [0] * 4
+    totals = (0,) * 4
+    total_recording = 0
     for meeting in meetings:
+        recording = "N"
+        if "recording" in meeting and meeting["recording"]:
+            recording = "Y"
+            total_recording += 1
         table.add_row(
-            meeting["meetingName"],
+            meeting.get("meetingName", "-"),
             str(meeting["moderatorCount"]),
             str(meeting["participantCount"]),
             str(meeting["videoCount"]),
             str(meeting["voiceParticipantCount"]),
+            recording,
             str(meeting["createDate"]),
         )
+
         totals = tuple(
             map(
                 sum,
                 zip(
                     totals,
                     [
-                        meeting["moderatorCount"],
-                        meeting["participantCount"],
-                        meeting["videoCount"],
-                        meeting["voiceParticipantCount"],
+                        int(meeting["moderatorCount"]),
+                        int(meeting["participantCount"]),
+                        int(meeting["videoCount"]),
+                        int(meeting["voiceParticipantCount"]),
                     ],
                 ),
             )
         )
-    table.add_row("Total", *map(str, totals))
+    table.add_row("Total", *map(str, totals + (total_recording,)))
     return table
 
 

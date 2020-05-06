@@ -1,0 +1,6 @@
+<response>
+<returncode>SUCCESS</returncode>
+<meetings/>
+<messageKey>noMeetings</messageKey>
+<message>no meetings were found on this server</message>
+</response>
