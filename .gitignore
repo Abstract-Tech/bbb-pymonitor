@@ -1,2 +1,4 @@
 .direnv
 .envrc-secret
+*.egg-info
+__pycache__
