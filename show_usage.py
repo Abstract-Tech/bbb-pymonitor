@@ -16,7 +16,11 @@ def get_meetings():
     response = client.get_meetings()
     meetings = []
 
-    for meeting in response["xml"]["meetings"]["meeting"]:
+    if "meeting" in response["xml"]["meetings"]:
+        response_meetings = response["xml"]["meetings"]["meeting"]
+    else:
+        response_meetings = []
+    for meeting in response_meetings:
         meeting_dict = {"name": meeting["meetingName"].get_cdata()}
         keys = [
             "participantCount",
