@@ -1,12 +1,14 @@
 from .urlbuilder import UrlBuilder
 from rich.console import Console
 from rich.table import Table
-from rich.text import Text
 
+import logging
 import os
 import requests
 import xmltodict
 
+
+logger = logging.getLogger()
 
 BBB_SECRET = os.environ.get("BBB_SECRET")
 BBB_URL = os.environ.get("BBB_URL")
@@ -76,6 +78,31 @@ def get_meetings_table(meetings):
     return table
 
 
+def send_influxdb(meetings):
+    influx_url = os.environ.get("INFLUXDB_URL")
+    influx_pass = os.environ.get("INFLUXDB_PASS")
+    influx_user = os.environ.get("INFLUXDB_USER")
+    response = requests.get(
+        influx_url + "/query",
+        params={"q": "SHOW DATABASES"},
+        auth=(influx_user, influx_pass),
+    )
+    total_video = sum(map(lambda x: int(x["videoCount"]), meetings))
+    total_participants = sum(map(lambda x: int(x["participantCount"]), meetings))
+    total_voice = sum(map(lambda x: int(x["voiceParticipantCount"]), meetings))
+    payload = f"room_info,host=moscote video={total_video},participants={total_participants},voice={total_voice}"
+    logger.debug(f"Sending measurement {payload}")
+    response = requests.post(
+        influx_url + "/api/v2/write?bucket=bbb",
+        auth=(influx_user, influx_pass),
+        data=payload,
+    )
+    if response.status_code < 300:
+        logger.error(response.text)
+
+
 def main():
     console = Console()
-    console.print(get_meetings_table(get_meetings()))
+    meetings = get_meetings()
+    console.print(get_meetings_table(meetings))
+    send_influxdb(meetings)
