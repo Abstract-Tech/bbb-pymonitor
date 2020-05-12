@@ -5,6 +5,7 @@ from rich.table import Table
 import logging
 import os
 import requests
+import sys
 
 
 logger = logging.getLogger()
@@ -81,4 +82,6 @@ def main():
     console = Console()
     meetings = get_meetings()
     console.print(get_summary_table(meetings))
-    send_influxdb(meetings)
+    if "--send" in sys.argv:
+        console.print("Sending metrics to influxdb")
+        send_influxdb(meetings)
