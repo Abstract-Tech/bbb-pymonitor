@@ -12,8 +12,8 @@ import sys
 logger = logging.getLogger()
 
 
-def get_empty_meeting_table():
-    table = Table(show_header=True, header_style="bold green")
+def get_summary_table(meetings):
+    table = Table(show_header=True, header_style="bold green", title="Summary")
     table.add_column("Title", style="dim")
     table.add_column("Moderators", justify="right")
     table.add_column("Participants", justify="right")
@@ -21,11 +21,6 @@ def get_empty_meeting_table():
     table.add_column("Voice", justify="right")
     table.add_column("Recording", justify="right")
     table.add_column("Created")
-    return table
-
-
-def get_summary_table(meetings):
-    table = get_empty_meeting_table()
     totals = (0,) * 4
     total_recording = 0
     for meeting in meetings:
@@ -83,8 +78,7 @@ def get_meeting_info(meeting):
     attendees = meeting["attendees"]["attendee"]
     if not isinstance(attendees, list):
         attendees = [attendees]
-
-    for attendee in meeting["attendees"]["attendee"]:
+    for attendee in attendees:
         table.add_row(
             attendee["fullName"],
             attendee["role"],

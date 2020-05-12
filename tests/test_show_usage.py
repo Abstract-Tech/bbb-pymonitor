@@ -16,8 +16,11 @@ EXAMPLES = [
 )
 def test_smoketest(name, example):
     from bbb_pymonitor.show_usage import get_summary_table
+    from bbb_pymonitor.show_usage import get_meeting_info
 
     get_summary_table(example)
+    for meeting in example:
+        get_meeting_info(meeting)
 
 
 def test_get_summary():
