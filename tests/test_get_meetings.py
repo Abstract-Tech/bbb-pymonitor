@@ -21,7 +21,7 @@ def test_video_count_always_present(mock_response, filename):
 
 
 @pytest.fixture
-def mock_response(mocker):
+def mock_response(mocker, monkeypatch):
     @contextmanager
     def do_mock(filename):
         """Mock requests.get so that the returned response has the text
@@ -33,4 +33,6 @@ def mock_response(mocker):
         requests.get().text = (Path(__file__).parent / filename).read_text()
         yield
 
+    monkeypatch.setenv("BBB_URL", "foo")
+    monkeypatch.setenv("BBB_SECRET", "bar")
     return do_mock

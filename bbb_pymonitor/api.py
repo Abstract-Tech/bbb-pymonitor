@@ -10,6 +10,13 @@ import requests
 import xmltodict
 
 
+BBB_SECRET = os.environ.get("BBB_SECRET")
+BBB_URL = os.environ.get("BBB_URL")
+
+if BBB_SECRET is None or BBB_URL is None:
+    raise ValueError("Please provide a URL and a secret to connect to BBB")
+
+
 class UrlBuilder:
     def __init__(self, bbbServerBaseUrl, securitySalt):
         self.securitySalt = securitySalt
@@ -42,19 +49,11 @@ class UrlBuilder:
         return sha1(secret_str.encode("utf-8")).hexdigest()
 
 
-BBB_SECRET = os.environ.get("BBB_SECRET")
-BBB_URL = os.environ.get("BBB_URL")
-
-if BBB_SECRET is None or BBB_URL is None:
-    raise ValueError("Please provide a URL and a secret to connect to BBB")
-
-builder = UrlBuilder(BBB_URL, BBB_SECRET)
-
-
 def get_meetings():
     """Invoke the API endpoint getMeetings, and convert the result
     to a list of dictionaries
     """
+    builder = UrlBuilder(BBB_URL, BBB_SECRET)
     url = builder.build_url("getMeetings")
     text = requests.get(url).text
     response = xmltodict.parse(text)
