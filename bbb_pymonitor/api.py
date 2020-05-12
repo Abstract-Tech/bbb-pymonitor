@@ -55,10 +55,11 @@ def get_meetings():
     """
     builder = UrlBuilder(BBB_URL, BBB_SECRET)
     url = builder.build_url("getMeetings")
-    text = requests.get(url).text
-    response = xmltodict.parse(text)
+    return parse_getmeeting_response(requests.get(url).text)
 
-    response_meetings = response["response"]["meetings"]
+
+def parse_getmeeting_response(text):
+    response_meetings = xmltodict.parse(text)["response"]["meetings"]
     if response_meetings is None:
         return []
     response_meetings.values()

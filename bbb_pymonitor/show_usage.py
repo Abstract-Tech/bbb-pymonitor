@@ -1,6 +1,7 @@
 from .api import get_meetings
 from rich.console import Console
 from rich.table import Table
+from rich.text import Text
 
 import logging
 import os
@@ -11,7 +12,7 @@ import sys
 logger = logging.getLogger()
 
 
-def get_summary_table(meetings):
+def get_empty_meeting_table():
     table = Table(show_header=True, header_style="bold green")
     table.add_column("Title", style="dim")
     table.add_column("Moderators", justify="right")
@@ -20,6 +21,11 @@ def get_summary_table(meetings):
     table.add_column("Voice", justify="right")
     table.add_column("Recording", justify="right")
     table.add_column("Created")
+    return table
+
+
+def get_summary_table(meetings):
+    table = get_empty_meeting_table()
     totals = (0,) * 4
     total_recording = 0
     for meeting in meetings:
@@ -55,6 +61,41 @@ def get_summary_table(meetings):
     return table
 
 
+def render_bool(value):
+    if value == "true":
+        return Text("✓", style="bold green")
+    else:
+        return Text("✗", style="red")
+
+
+def get_meeting_info(meeting):
+    if not meeting["attendees"]:
+        return Text('{meeting["meetingName"]} (no attendees)')
+    table = Table(
+        show_header=True, header_style="bold green", title=meeting["meetingName"]
+    )
+    table.add_column("Name", style="dim")
+    table.add_column("Role", justify="right")
+    table.add_column("Presenter", justify="right")
+    table.add_column("Listen only", justify="right")
+    table.add_column("Voice", justify="right")
+    table.add_column("Video", justify="right")
+    attendees = meeting["attendees"]["attendee"]
+    if not isinstance(attendees, list):
+        attendees = [attendees]
+
+    for attendee in meeting["attendees"]["attendee"]:
+        table.add_row(
+            attendee["fullName"],
+            attendee["role"],
+            render_bool(attendee["isPresenter"]),
+            render_bool(attendee["isListeningOnly"]),
+            render_bool(attendee["hasJoinedVoice"]),
+            render_bool(attendee["hasVideo"]),
+        )
+    return table
+
+
 def send_influxdb(meetings):
     influx_url = os.environ.get("INFLUXDB_URL")
     influx_pass = os.environ.get("INFLUXDB_PASS")
@@ -81,6 +122,8 @@ def send_influxdb(meetings):
 def main():
     console = Console()
     meetings = get_meetings()
+    for meeting in meetings:
+        console.print(get_meeting_info(meeting))
     console.print(get_summary_table(meetings))
     if "--send" in sys.argv:
         console.print("Sending metrics to influxdb")
