@@ -1,40 +1,16 @@
-from .urlbuilder import UrlBuilder
+from .api import get_meetings
 from rich.console import Console
 from rich.table import Table
 
 import logging
 import os
 import requests
-import xmltodict
 
 
 logger = logging.getLogger()
 
-BBB_SECRET = os.environ.get("BBB_SECRET")
-BBB_URL = os.environ.get("BBB_URL")
 
-if BBB_SECRET is None or BBB_URL is None:
-    raise ValueError("Please provide a URL and a secret to connect to BBB")
-
-builder = UrlBuilder(BBB_URL, BBB_SECRET)
-
-
-def get_meetings():
-    url = builder.build_url("getMeetings")
-    text = requests.get(url).text
-    response = xmltodict.parse(text)
-
-    response_meetings = response["response"]["meetings"]
-    if response_meetings is None:
-        return []
-    response_meetings.values()
-    if "meeting" in response_meetings:
-        if "meetingName" in response_meetings["meeting"]:
-            return [response_meetings["meeting"]]
-        return response_meetings["meeting"]
-
-
-def get_meetings_table(meetings):
+def get_summary_table(meetings):
     table = Table(show_header=True, header_style="bold green")
     table.add_column("Title", style="dim")
     table.add_column("Moderators", justify="right")
@@ -104,5 +80,5 @@ def send_influxdb(meetings):
 def main():
     console = Console()
     meetings = get_meetings()
-    console.print(get_meetings_table(meetings))
+    console.print(get_summary_table(meetings))
     send_influxdb(meetings)

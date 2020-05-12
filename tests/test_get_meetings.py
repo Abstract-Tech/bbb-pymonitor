@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from pathlib import Path
+
 import pytest
 
 
@@ -7,12 +8,10 @@ FILENAMES = tuple((Path(__file__).parent / "xml/getMeetings").iterdir())
 
 
 @pytest.mark.parametrize(
-    "filename",
-    FILENAMES,
+    "filename", FILENAMES,
 )
-def test_with_breakout_rooms(mock_response, filename):
-    from bbb_pymonitor.show_usage import get_meetings
-
+def test_video_count_always_present(mock_response, filename):
+    from bbb_pymonitor.api import get_meetings
 
     with mock_response(filename):
         meetings = get_meetings()
@@ -22,7 +21,7 @@ def test_with_breakout_rooms(mock_response, filename):
 
 
 @pytest.fixture
-def mock_response(mocker):
+def mock_response(mocker, monkeypatch):
     @contextmanager
     def do_mock(filename):
         """Mock requests.get so that the returned response has the text
@@ -33,4 +32,7 @@ def mock_response(mocker):
         mocker.patch("requests.get")
         requests.get().text = (Path(__file__).parent / filename).read_text()
         yield
+
+    monkeypatch.setenv("BBB_URL", "foo")
+    monkeypatch.setenv("BBB_SECRET", "bar")
     return do_mock
