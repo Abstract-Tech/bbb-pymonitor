@@ -1,6 +1,7 @@
 from .api import BBB_HOST
 from .api import get_meetings
 from .api import get_recordings
+from .api import RECORDING_STATES
 from collections import Counter
 from rich.console import Console
 from rich.logging import RichHandler
@@ -104,7 +105,8 @@ def send_influxdb(meetings=(), recordings=()):
     total_participants = sum(map(lambda x: int(x["participantCount"]), meetings))
     total_voice = sum(map(lambda x: int(x["voiceParticipantCount"]), meetings))
     payload = f"room_info,host={BBB_HOST} video={total_video},participants={total_participants},voice={total_voice}"
-    recordings_count = Counter(map(lambda x: x["state"], recordings))
+    recordings_count = Counter({a: 0 for a in RECORDING_STATES})
+    recordings_count.update(map(lambda x: x["state"], recordings))
     recording_stats = ",".join(f"{key}={val}" for key, val in recordings_count.items())
     payload += f"\nrecording_info,host={BBB_HOST} {recording_stats}"
     logger.debug(f"Sending measurement {payload}")

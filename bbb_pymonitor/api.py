@@ -19,6 +19,14 @@ if BBB_SECRET is None or BBB_URL is None:
 
 BBB_HOST = urlparse(BBB_URL).netloc
 
+RECORDING_STATES = [
+    "processing",
+    "processed",
+    "published",
+    "unpublished",
+    "deleted",
+]
+
 
 class UrlBuilder:
     def __init__(self, bbbServerBaseUrl, securitySalt):
@@ -74,7 +82,7 @@ def parse_getmeeting_response(text):
         return response_meetings["meeting"]
 
 
-def get_recordings(state="processing,processed,published,unpublished,deleted"):
+def get_recordings(state=",".join(RECORDING_STATES)):
     url = builder.build_url("getRecordings", params={"state": state})
     return parse_recordings(requests.get(url).text)
 
