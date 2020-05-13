@@ -1,20 +1,25 @@
 from bbb_pymonitor.api import parse_getmeeting_response
+from bbb_pymonitor.api import parse_recordings
 from pathlib import Path
 from rich.console import Console
 
 import pytest
 
 
-EXAMPLES = [
+GETMEETINGS_EXAMPLES = [
     (el.name, parse_getmeeting_response(el.read_text()))
     for el in ((Path(__file__).parent / "xml/getMeetings").iterdir())
+]
+GETRECORDINGS_EXAMPLES = [
+    (el.name, parse_recordings(el.read_text()))
+    for el in ((Path(__file__).parent / "xml/getRecordings").iterdir())
 ]
 
 
 @pytest.mark.parametrize(
-    "name,example", EXAMPLES,
+    "name,example", GETMEETINGS_EXAMPLES,
 )
-def test_smoketest(name, example):
+def test_meetings_smoketest(name, example):
     from bbb_pymonitor.show_usage import get_summary_table
     from bbb_pymonitor.show_usage import get_meeting_info
 
@@ -26,7 +31,7 @@ def test_smoketest(name, example):
 def test_get_summary():
     from bbb_pymonitor.show_usage import get_summary_table
 
-    meetings = dict(EXAMPLES)["two-meetings.xml"]
+    meetings = dict(GETMEETINGS_EXAMPLES)["two-meetings.xml"]
 
     table = get_summary_table(meetings)
     console = Console(record=True, width=120)
@@ -40,7 +45,7 @@ def test_get_summary():
 def test_get_meeting():
     from bbb_pymonitor.show_usage import get_meeting_info
 
-    meetings = dict(EXAMPLES)["manypeople.xml"]
+    meetings = dict(GETMEETINGS_EXAMPLES)["manypeople.xml"]
 
     table = get_meeting_info(meetings[0])
     console = Console(record=True, width=120)
@@ -49,3 +54,16 @@ def test_get_meeting():
     text = console.export_text()
     assert "Professor Chaos" in text
     assert "World Domination discussion" in text
+
+
+def test_get_recordings():
+    from bbb_pymonitor.show_usage import get_recordings_info
+
+    recordings = dict(GETRECORDINGS_EXAMPLES)["one.xml"]
+    table = get_recordings_info(recordings)
+    console = Console(record=True, width=120)
+    console.print()
+    console.print(table)
+    text = console.export_text()
+    assert "ACME stakeholders meeting" in text
+    assert "Greenlight" in text

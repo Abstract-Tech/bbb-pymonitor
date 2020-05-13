@@ -49,11 +49,13 @@ class UrlBuilder:
         return sha1(secret_str.encode("utf-8")).hexdigest()
 
 
+builder = UrlBuilder(BBB_URL, BBB_SECRET)
+
+
 def get_meetings():
     """Invoke the API endpoint getMeetings, and convert the result
     to a list of dictionaries
     """
-    builder = UrlBuilder(BBB_URL, BBB_SECRET)
     url = builder.build_url("getMeetings")
     return parse_getmeeting_response(requests.get(url).text)
 
@@ -67,3 +69,13 @@ def parse_getmeeting_response(text):
         if "meetingName" in response_meetings["meeting"]:
             return [response_meetings["meeting"]]
         return response_meetings["meeting"]
+
+
+def get_recordings():
+    url = builder.build_url("getRecordings")
+    return parse_recordings(requests.get(url).text)
+
+
+def parse_recordings(text):
+    parsed = xmltodict.parse(text)
+    return parsed["response"]["recordings"]["recording"]
