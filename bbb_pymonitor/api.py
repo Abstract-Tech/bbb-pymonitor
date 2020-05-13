@@ -71,11 +71,16 @@ def parse_getmeeting_response(text):
         return response_meetings["meeting"]
 
 
-def get_recordings():
-    url = builder.build_url("getRecordings")
+def get_recordings(state="processing,processed,published,unpublished,deleted"):
+    url = builder.build_url("getRecordings", params={"state": state})
     return parse_recordings(requests.get(url).text)
 
 
 def parse_recordings(text):
     parsed = xmltodict.parse(text)
-    return parsed["response"]["recordings"]["recording"]
+    recordings = parsed["response"]["recordings"]
+    if recordings is None:
+        return []
+    if isinstance(recordings["recording"], list):
+        return recordings["recording"]
+    return [recordings["recording"]]

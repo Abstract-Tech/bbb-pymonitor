@@ -116,9 +116,11 @@ def send_influxdb(meetings):
         logger.error(response.text)
 
 
-def get_recordings_info(recordings):
+def get_recordings_info(recordings_unsorted):
+    recordings = sorted(recordings_unsorted, key=lambda x: x["startTime"])
     table = Table(show_header=True, header_style="bold green", title="Recordings")
     table.add_column("Name")
+    table.add_column("State")
     table.add_column("Size")
     table.add_column("Raw Size")
     table.add_column("Started")
@@ -128,7 +130,8 @@ def get_recordings_info(recordings):
     for recording in recordings:
         duration = get_duration(recording)
         table.add_row(
-            recording["name"],
+            recording["metadata"].get("name", recording["name"]),
+            fmt_state(recording["state"]),
             fmt_size(recording["size"]),
             fmt_size(recording["rawSize"]),
             fmt_dt(recording["startTime"]),
@@ -136,6 +139,13 @@ def get_recordings_info(recordings):
             recording["metadata"].get("bbb-origin", ""),
         )
     return table
+
+
+def fmt_state(state):
+    return {
+        "published": Text(state, style="green"),
+        "deleted": Text(state, style="red"),
+    }.get(state, state)
 
 
 def from_epoch(dt_as_str):

@@ -67,3 +67,4 @@ def test_get_recordings():
     text = console.export_text()
     assert "ACME stakeholders meeting" in text
     assert "Greenlight" in text
+    assert "breakfast" in text
