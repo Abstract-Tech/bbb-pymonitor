@@ -115,7 +115,7 @@ def send_influxdb(meetings=(), recordings=()):
         auth=(influx_user, influx_pass),
         data=payload,
     )
-    if response.status_code < 300:
+    if response.status_code >= 300:
         logger.error(response.text)
 
 
