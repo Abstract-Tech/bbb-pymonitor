@@ -177,7 +177,9 @@ def fmt_size(num_as_str, suffix="B"):
     """Format an integer number using KiB/MiB etc suffix
     """
     num = int(num_as_str)
-    magnitude = int(math.floor(math.log(num, 1024)))
+    magnitude = 0
+    if num != 0:
+        magnitude = int(math.floor(math.log(num, 1024)))
     val = num / math.pow(1024, magnitude)
     if magnitude > 7:
         return "{:.1f}{}{}".format(val, "Yi", suffix)

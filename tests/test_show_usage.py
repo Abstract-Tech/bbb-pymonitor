@@ -28,6 +28,18 @@ def test_meetings_smoketest(name, example):
         get_meeting_info(meeting)
 
 
+@pytest.mark.parametrize(
+    "name,example", GETRECORDINGS_EXAMPLES,
+)
+def test_recordings_smoketest(name, example):
+    from bbb_pymonitor.show_usage import get_recordings_info
+
+    table = get_recordings_info(example)
+    console = Console(record=True, width=120)
+    console.print()
+    console.print(table)
+
+
 def test_get_summary():
     from bbb_pymonitor.show_usage import get_summary_table
 

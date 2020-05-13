@@ -88,7 +88,7 @@
 </attendees>
 <metadata>
 <bbb-origin-version>2.5.5</bbb-origin-version>
-<bbb-origin-server-name>moscote.abzt.de</bbb-origin-server-name>
+<bbb-origin-server-name>bbb.example.com</bbb-origin-server-name>
 <bbb-origin>Greenlight</bbb-origin>
 <gl-listed>false</gl-listed>
 </metadata>
