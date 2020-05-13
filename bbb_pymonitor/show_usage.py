@@ -3,6 +3,7 @@ from .api import get_meetings
 from .api import get_recordings
 from collections import Counter
 from rich.console import Console
+from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
 
@@ -99,11 +100,6 @@ def send_influxdb(meetings=(), recordings=()):
     influx_url = os.environ.get("INFLUXDB_URL")
     influx_pass = os.environ.get("INFLUXDB_PASS")
     influx_user = os.environ.get("INFLUXDB_USER")
-    response = requests.get(
-        influx_url + "/query",
-        params={"q": "SHOW DATABASES"},
-        auth=(influx_user, influx_pass),
-    )
     total_video = sum(map(lambda x: int(x["videoCount"]), meetings))
     total_participants = sum(map(lambda x: int(x["participantCount"]), meetings))
     total_voice = sum(map(lambda x: int(x["voiceParticipantCount"]), meetings))
@@ -189,6 +185,7 @@ def fmt_size(num_as_str, suffix="B"):
 
 
 def main():
+    setup_logging()
     console = Console()
 
     recordings = get_recordings()
@@ -203,3 +200,13 @@ def main():
     if "--send" in sys.argv:
         console.print("Sending metrics to influxdb")
         send_influxdb(meetings=meetings, recordings=recordings)
+
+
+def setup_logging():
+    FORMAT = "%(message)s"
+    logging.basicConfig(
+        level=os.environ.get("LOGLEVEL", "WARN"),
+        format=FORMAT,
+        datefmt="[%X] ",
+        handlers=[RichHandler()],
+    )
