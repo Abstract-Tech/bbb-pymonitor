@@ -1,5 +1,7 @@
+from .api import BBB_HOST
 from .api import get_meetings
 from .api import get_recordings
+from collections import Counter
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -93,7 +95,7 @@ def get_meeting_info(meeting):
     return table
 
 
-def send_influxdb(meetings):
+def send_influxdb(meetings=(), recordings=()):
     influx_url = os.environ.get("INFLUXDB_URL")
     influx_pass = os.environ.get("INFLUXDB_PASS")
     influx_user = os.environ.get("INFLUXDB_USER")
@@ -105,7 +107,10 @@ def send_influxdb(meetings):
     total_video = sum(map(lambda x: int(x["videoCount"]), meetings))
     total_participants = sum(map(lambda x: int(x["participantCount"]), meetings))
     total_voice = sum(map(lambda x: int(x["voiceParticipantCount"]), meetings))
-    payload = f"room_info,host=moscote video={total_video},participants={total_participants},voice={total_voice}"
+    payload = f"room_info,host={BBB_HOST} video={total_video},participants={total_participants},voice={total_voice}"
+    recordings_count = Counter(map(lambda x: x["state"], recordings))
+    recording_stats = ",".join(f"{key}={val}" for key, val in recordings_count.items())
+    payload += f"\nrecording_info,host={BBB_HOST} {recording_stats}"
     logger.debug(f"Sending measurement {payload}")
     response = requests.post(
         influx_url + "/api/v2/write?bucket=bbb",
@@ -195,4 +200,4 @@ def main():
 
     if "--send" in sys.argv:
         console.print("Sending metrics to influxdb")
-        send_influxdb(meetings=meetings)
+        send_influxdb(meetings=meetings, recordings=recordings)

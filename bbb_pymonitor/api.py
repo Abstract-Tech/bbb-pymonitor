@@ -4,6 +4,7 @@ https://github.com/yunkaiwang/bigbluebutton-api-python/blob/master/bigbluebutton
 """
 from hashlib import sha1
 from urllib.parse import quote_plus
+from urllib.parse import urlparse
 
 import os
 import requests
@@ -15,6 +16,8 @@ BBB_URL = os.environ.get("BBB_URL")
 
 if BBB_SECRET is None or BBB_URL is None:
     raise ValueError("Please provide a URL and a secret to connect to BBB")
+
+BBB_HOST = urlparse(BBB_URL).netloc
 
 
 class UrlBuilder:
