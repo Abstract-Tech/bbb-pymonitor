@@ -132,14 +132,15 @@ def get_recordings_info(recordings_unsorted):
 
     for recording in recordings:
         duration = get_duration(recording)
+        metadata = recording.get("metadata", {}) or {}
         table.add_row(
-            recording.get("metadata", {}).get("name", recording["name"]),
+            metadata.get("name", recording["name"]),
             fmt_state(recording["state"]),
             fmt_size(recording["size"]),
             fmt_size(recording["rawSize"]),
             fmt_dt(recording["startTime"]),
             duration,
-            recording["metadata"].get("bbb-origin", ""),
+            metadata.get("bbb-origin", ""),
         )
     return table
 
