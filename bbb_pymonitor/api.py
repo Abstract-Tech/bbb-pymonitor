@@ -4,6 +4,7 @@ https://github.com/yunkaiwang/bigbluebutton-api-python/blob/master/bigbluebutton
 """
 from hashlib import sha1
 from urllib.parse import quote_plus
+from urllib.parse import urlparse
 
 import os
 import requests
@@ -15,6 +16,16 @@ BBB_URL = os.environ.get("BBB_URL")
 
 if BBB_SECRET is None or BBB_URL is None:
     raise ValueError("Please provide a URL and a secret to connect to BBB")
+
+BBB_HOST = urlparse(BBB_URL).netloc
+
+RECORDING_STATES = [
+    "processing",
+    "processed",
+    "published",
+    "unpublished",
+    "deleted",
+]
 
 
 class UrlBuilder:
@@ -49,16 +60,19 @@ class UrlBuilder:
         return sha1(secret_str.encode("utf-8")).hexdigest()
 
 
+builder = UrlBuilder(BBB_URL, BBB_SECRET)
+
+
 def get_meetings():
     """Invoke the API endpoint getMeetings, and convert the result
     to a list of dictionaries
     """
-    builder = UrlBuilder(BBB_URL, BBB_SECRET)
     url = builder.build_url("getMeetings")
-    text = requests.get(url).text
-    response = xmltodict.parse(text)
+    return parse_getmeeting_response(requests.get(url).text)
 
-    response_meetings = response["response"]["meetings"]
+
+def parse_getmeeting_response(text):
+    response_meetings = xmltodict.parse(text)["response"]["meetings"]
     if response_meetings is None:
         return []
     response_meetings.values()
@@ -66,3 +80,18 @@ def get_meetings():
         if "meetingName" in response_meetings["meeting"]:
             return [response_meetings["meeting"]]
         return response_meetings["meeting"]
+
+
+def get_recordings(state=",".join(RECORDING_STATES)):
+    url = builder.build_url("getRecordings", params={"state": state})
+    return parse_recordings(requests.get(url).text)
+
+
+def parse_recordings(text):
+    parsed = xmltodict.parse(text)
+    recordings = parsed["response"]["recordings"]
+    if recordings is None:
+        return []
+    if isinstance(recordings["recording"], list):
+        return recordings["recording"]
+    return [recordings["recording"]]
