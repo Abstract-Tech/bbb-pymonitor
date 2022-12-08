@@ -5,7 +5,7 @@
 #    pip-compile
 #
 arrow==0.15.6             # via bbb-pymonitor (setup.py)
-certifi==2020.4.5.1       # via requests
+certifi==2022.12.7       # via requests
 chardet==3.0.4            # via requests
 colorama==0.4.3           # via rich
 commonmark==0.9.1         # via rich
